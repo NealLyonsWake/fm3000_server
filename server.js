@@ -71,6 +71,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
             clientMap.splice(index, 1); // Remove request client from clients map
         }
+            console.log('There are now, ', clientMap.length, 'users connected.')
 
     })
 
