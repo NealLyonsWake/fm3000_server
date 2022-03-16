@@ -50,11 +50,28 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
     }
 
     stream.on('close', () => {
-        const index = clientMap.findIndex((client)=>{
+        const index = clientMap.findIndex((client) => {
             return client.connection === req.socket.remoteAddress
         })
-        console.log(index)
-        console.log(clientMap[index].nickname, 'has closed')
+
+        if (index !== -1) {
+            
+            console.log(clientMap[index].nickname, 'has closed')
+            
+            
+            const payLoad = { // Create that a player has left payLoad broadcast announcement
+                'method': 'announce',
+                'nickname': clientMap[index].nickname,
+                'joined_or_left': 'left'
+            };
+
+            wss.clients.forEach((client) => { // Access each client on the server
+                client.send(JSON.stringify(payLoad)); // Broadcast leave announcement payLoad to each client
+            });
+
+            clientMap.splice(index, 1); // Remove request client from clients map
+        }
+
     })
 
     stream.on('message', (msg) => { // Handle all messages and sort below
