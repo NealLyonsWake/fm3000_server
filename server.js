@@ -14,32 +14,28 @@ const wss = new Server({ server }); // Init Websocket server variable, using HTT
 wss.on('connection', (stream, req) => { // Handle all the request and response traffic while client is connected to the Websocket
 
     const clientConnection = req.socket.remoteAddress; // Obtain client IP address
-    const clientID = crypto.randomBytes(64).toString('hex'); // Create a random ID for the client
 
-    clientMap.push({ // Add initial client ID and IP to clients array
-        'clientID': clientID,
-        'connection':
-            clientConnection
-    });
+    const index = clientMap.findIndex((client) => {
+        return client.connection === clientConnection;
+    })
+    if (index === -1) {
 
-    const payLoad = { // Generate connection payload that stores method and client ID
-        'method': 'connect',
-        'clientID': clientID
-    };
+        const clientID = crypto.randomBytes(64).toString('hex'); // Create a random ID for the client
 
-    stream.send(JSON.stringify(payLoad)) // Send payload to the client
+        clientMap.push({ // Add initial client ID and IP to clients array
+            'clientID': clientID,
+            'connection':
+                clientConnection
+        });
 
+        const payLoad = { // Generate connection payload that stores method and client ID
+            'method': 'connect',
+            'clientID': clientID
+        };
 
-    // wss.on('close', (stream, req) => {
-    //     const index = clientMap.findIndex((client) => {
-    //         return client.connection === req.socket.remoteAddress;
-    //     })
-    //     console.log(index)
-    //     if (index !== -1) {
-    //         clientMap.splice(index, 1);
-    //     }
-    // })
-
+        stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
+    }
+    
     stream.on('message', (msg) => { // Handle all messages and sort below
 
         const request = JSON.parse(msg); // Store the request in JSON
@@ -48,11 +44,11 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             const index = clientMap.findIndex((client) => { // Determine index of client's request ID
                 return client.clientID === request.clientID;
             })
-           
+
             if (index !== -1) {
                 clientMap.splice(index, 1); // Remove request client from clients map
             }
-            // console.log('closed')
+            console.log('closed')
 
             const payLoad = { // Create that a player has left payLoad broadcast announcement
                 'method': 'announce',
