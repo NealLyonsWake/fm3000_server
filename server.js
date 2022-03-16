@@ -14,8 +14,8 @@ const wss = new Server({ server }); // Init Websocket server variable, using HTT
 wss.on('connection', (stream, req) => { // Handle all the request and response traffic while client is connected to the Websocket
 
     const clientConnection = req.socket.remoteAddress; // Obtain client IP address
-    
-    console.log(clientConnection)
+
+    console.log('Client IP:', clientConnection)
 
     const index = clientMap.findIndex((client) => {
         return client.connection === clientConnection;
