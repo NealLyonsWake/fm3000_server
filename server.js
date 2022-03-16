@@ -54,7 +54,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             return client.connection === req.socket.remoteAddress
         })
         console.log(index)
-        console.log(req.socket.remoteAddress, 'has closed')
+        console.log(clientMap[index].nickname, 'has closed')
     })
 
     stream.on('message', (msg) => { // Handle all messages and sort below
