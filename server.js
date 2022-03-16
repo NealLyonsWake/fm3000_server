@@ -53,6 +53,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         const index = clientMap.findIndex((client)=>{
             return client.connection === req.socket.remoteAddress
         })
+        console.log(index)
         console.log(req.socket.remoteAddress, 'has closed')
     })
 
@@ -60,28 +61,28 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
         const request = JSON.parse(msg); // Store the request in JSON
 
-        if (request.method === 'close') { // Close method
-            const index = clientMap.findIndex((client) => { // Determine index of client's request ID
-                return client.clientID === request.clientID;
-            })
+        // if (request.method === 'close') { // Close method
+        //     const index = clientMap.findIndex((client) => { // Determine index of client's request ID
+        //         return client.clientID === request.clientID;
+        //     })
 
-            if (index !== -1) {
-                clientMap.splice(index, 1); // Remove request client from clients map
-            }
-            console.log('closed')
+        //     if (index !== -1) {
+        //         clientMap.splice(index, 1); // Remove request client from clients map
+        //     }
+        //     console.log('closed')
 
-            const payLoad = { // Create that a player has left payLoad broadcast announcement
-                'method': 'announce',
-                'nickname': request.nickname,
-                'joined_or_left': 'left'
-            };
+        //     const payLoad = { // Create that a player has left payLoad broadcast announcement
+        //         'method': 'announce',
+        //         'nickname': request.nickname,
+        //         'joined_or_left': 'left'
+        //     };
 
-            wss.clients.forEach((client) => { // Access each client on the server
-                client.send(JSON.stringify(payLoad)); // Broadcast leave announcement payLoad to each client
-            });
+        //     wss.clients.forEach((client) => { // Access each client on the server
+        //         client.send(JSON.stringify(payLoad)); // Broadcast leave announcement payLoad to each client
+        //     });
 
-            stream.close(); // Close the connection of the request client
-        }
+        //     stream.close(); // Close the connection of the request client
+        // }
 
         if (request.method === 'nickname') {
 
