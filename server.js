@@ -15,7 +15,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
     const clientConnection = req.socket.remoteAddress; // Obtain client IP address
 
-    console.log('Client IP:', clientConnection)
+    
 
     // const index = clientMap.findIndex((client) => {
     //     return client.connection === clientConnection;
@@ -35,6 +35,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         'clientID': clientID
     };
 
+    
     stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
     // }
     // else {
@@ -112,6 +113,8 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
                     return { ...client } // Return the client if the client ID doesn't match the request
                 }
             })
+
+            console.log(request.nickname, 'has joined. There are now, ', clientMap.length, 'users connected.')
 
             const payLoad = { // Create that a player has joined payLoad broadcast announcement
                 'method': 'announce',
