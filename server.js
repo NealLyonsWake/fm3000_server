@@ -129,11 +129,11 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
         else if (request.method === 'inputPosition') {
 
-            clientMap = clientMap.filter((client) => {
-                if (client.nickname) {
-                    return client
-                }
-            })
+            // clientMap = clientMap.filter((client) => {
+            //     if (client.nickname) {
+            //         return client
+            //     }
+            // })
 
             clientMap = clientMap.map((client) => {
                 if (client.clientID === request.clientID) { // Store client position in client array
