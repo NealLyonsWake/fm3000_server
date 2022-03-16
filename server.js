@@ -49,6 +49,10 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         stream.send(JSON.stringify(payLoad)) // Send client ID reminder payload to the client
     }
 
+    stream.on('close', () => {
+        console.log(req.socket.remoteAddress, 'has closed')
+    })
+
     stream.on('message', (msg) => { // Handle all messages and sort below
 
         const request = JSON.parse(msg); // Store the request in JSON
