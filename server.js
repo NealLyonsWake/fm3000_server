@@ -17,37 +17,37 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
     console.log('Client IP:', clientConnection)
 
-    const index = clientMap.findIndex((client) => {
-        return client.connection === clientConnection;
-    })
-    if (index === -1) {
+    // const index = clientMap.findIndex((client) => {
+    //     return client.connection === clientConnection;
+    // })
+    // if (index === -1) {
 
-        const clientID = crypto.randomBytes(64).toString('hex'); // Create a random ID for the client
+    const clientID = crypto.randomBytes(64).toString('hex'); // Create a random ID for the client
 
-        clientMap.push({ // Add initial client ID and IP to clients array
-            'clientID': clientID,
-            'connection':
-                clientConnection
-        });
+    clientMap.push({ // Add initial client ID and IP to clients array
+        'clientID': clientID,
+        'connection':
+            clientConnection
+    });
 
-        const payLoad = { // Generate connection payload that stores method and client ID
-            'method': 'connect',
-            'clientID': clientID
-        };
+    const payLoad = { // Generate connection payload that stores method and client ID
+        'method': 'connect',
+        'clientID': clientID
+    };
 
-        stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
-    }
-    else {
+    stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
+    // }
+    // else {
 
-        const remindClientID = clientMap[index].clientID;
+    //     const remindClientID = clientMap[index].clientID;
 
-        const payLoad = { // Generate reconnect payload that stores method and client ID
-            'method': 'connect',
-            'clientID': remindClientID
-        };
+    //     const payLoad = { // Generate reconnect payload that stores method and client ID
+    //         'method': 'connect',
+    //         'clientID': remindClientID
+    //     };
 
-        stream.send(JSON.stringify(payLoad)) // Send client ID reminder payload to the client
-    }
+    //     stream.send(JSON.stringify(payLoad)) // Send client ID reminder payload to the client
+    // }
 
     stream.on('close', () => {
         const index = clientMap.findIndex((client) => {
@@ -55,10 +55,10 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         })
 
         if (index !== -1) {
-            
+
             console.log(clientMap[index].nickname, 'has closed')
-            
-            
+
+
             const payLoad = { // Create that a player has left payLoad broadcast announcement
                 'method': 'announce',
                 'nickname': clientMap[index].nickname,
@@ -71,7 +71,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
             clientMap.splice(index, 1); // Remove request client from clients map
         }
-            console.log('There are now, ', clientMap.length, 'users connected.')
+        console.log('There are now, ', clientMap.length, 'users connected.')
 
     })
 
@@ -125,6 +125,12 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         }
 
         else if (request.method === 'inputPosition') {
+
+            clientMap = clientMap.filter((client) => {
+                if (client.nickname) {
+                    return client
+                }
+            })
 
             clientMap = clientMap.map((client) => {
                 if (client.clientID === request.clientID) { // Store client position in client array
