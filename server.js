@@ -115,6 +115,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             })
 
             console.log(request.nickname, 'has joined. There are now, ', clientMap.length, 'users connected.')
+            console.log(clientMap)
 
             const payLoad = { // Create that a player has joined payLoad broadcast announcement
                 'method': 'announce',
