@@ -15,7 +15,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
     const clientConnection = req.socket.remoteAddress; // Obtain client IP address
 
-    
+
 
     // const index = clientMap.findIndex((client) => {
     //     return client.connection === clientConnection;
@@ -35,7 +35,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         'clientID': clientID
     };
 
-    
+
     stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
     // }
     // else {
@@ -128,7 +128,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             });
         }
 
-        else if (request.method === 'inputPosition') {
+        else if (request.method === 'inputStatus') {
 
             // clientMap = clientMap.filter((client) => {
             //     if (client.nickname) {
@@ -137,16 +137,26 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             // })
 
             clientMap = clientMap.map((client) => {
-                if (client.clientID === request.clientID) { // Store client position in client array
-                    return { ...client, xPosition: request.xPosition, yPosition: request.yPosition }
+                if (client.clientID === request.clientID) { // Store client status in client array
+                    return {
+                        ...client,
+                        xPosition: request.xPosition,
+                        yPosition: request.yPosition,
+                        playerDirection: request.playerDirection,
+                        animation: request.animation,
+                        gunDirection: request.gunDirection,
+                        gunAngle: request.gunAngle,
+                        attack: request.attack,
+                        health: request.health
+                    }
                 }
                 else {
                     return { ...client } // Return the client if the client ID doesn't match the request
                 }
             })
 
-            const payLoad = { // Create payload for broadcasting client positions
-                'method': 'broadcastPositions',
+            const payLoad = { // Create payload for broadcasting client status
+                'method': 'broadcastStatus',
                 'clientMap': clientMap
             };
 
