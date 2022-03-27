@@ -16,12 +16,6 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
     const clientConnection = req.socket.remoteAddress; // Obtain client IP address
 
 
-
-    // const index = clientMap.findIndex((client) => {
-    //     return client.connection === clientConnection;
-    // })
-    // if (index === -1) {
-
     const clientID = crypto.randomBytes(64).toString('hex'); // Create a random ID for the client
 
     clientMap.push({ // Add initial client ID and IP to clients array
@@ -37,18 +31,6 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
 
     stream.send(JSON.stringify(payLoad)) // Send client ID payload to the client
-    // }
-    // else {
-
-    //     const remindClientID = clientMap[index].clientID;
-
-    //     const payLoad = { // Generate reconnect payload that stores method and client ID
-    //         'method': 'connect',
-    //         'clientID': remindClientID
-    //     };
-
-    //     stream.send(JSON.stringify(payLoad)) // Send client ID reminder payload to the client
-    // }
 
     stream.on('close', () => {
         const index = clientMap.findIndex((client) => {
@@ -80,34 +62,15 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
         const request = JSON.parse(msg); // Store the request in JSON
 
-        // if (request.method === 'close') { // Close method
-        //     const index = clientMap.findIndex((client) => { // Determine index of client's request ID
-        //         return client.clientID === request.clientID;
-        //     })
-
-        //     if (index !== -1) {
-        //         clientMap.splice(index, 1); // Remove request client from clients map
-        //     }
-        //     console.log('closed')
-
-        //     const payLoad = { // Create that a player has left payLoad broadcast announcement
-        //         'method': 'announce',
-        //         'nickname': request.nickname,
-        //         'joined_or_left': 'left'
-        //     };
-
-        //     wss.clients.forEach((client) => { // Access each client on the server
-        //         client.send(JSON.stringify(payLoad)); // Broadcast leave announcement payLoad to each client
-        //     });
-
-        //     stream.close(); // Close the connection of the request client
-        // }
-
         if (request.method === 'nickname') {
 
             clientMap = clientMap.map((client) => {
                 if (client.clientID === request.clientID) {
-                    return { ...client, nickname: request.nickname } // Store client nickname to clients array
+                    return { // Store client nickname and health to clients array
+                        ...client,
+                         nickname: request.nickname,
+                         health: request.health
+                        } 
                 }
                 else {
                     return { ...client } // Return the client if the client ID doesn't match the request
@@ -130,12 +93,6 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
         else if (request.method === 'inputStatus') {
 
-            // clientMap = clientMap.filter((client) => {
-            //     if (client.nickname) {
-            //         return client
-            //     }
-            // })
-
             clientMap = clientMap.map((client) => {
                 if (client.clientID === request.clientID) { // Store client status in client array
                     return {
@@ -144,10 +101,9 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
                         yPosition: request.yPosition,
                         playerDirection: request.playerDirection,
                         animation: request.animation,
-                        gunDirection: request.gunDirection,
                         gunAngle: request.gunAngle,
                         attack: request.attack,
-                        health: request.health
+                        // health: request.health
                     }
                 }
                 else {
@@ -161,9 +117,27 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             };
 
             wss.clients.forEach((client) => { // Access each client on the server
-                client.send(JSON.stringify(payLoad)); // Broadcast client positions payLoad to each client
+                client.send(JSON.stringify(payLoad)); // Broadcast general client status payLoad to each client
             });
 
+
+        }
+
+        else if (request.method === 'opponentShot') { // Message update if a player is shot
+            const index = clientMap.findIndex(() => {
+                return client.clientID === request.opponentID // Find the player who was shot
+            })
+
+            clientMap[index].health-- // Subtract 1 from the health of that player who was shot
+
+            const payLoad = { // Create payload for broadcasting client status
+                'method': 'broadcastStatus',
+                'clientMap': clientMap
+            };
+
+            wss.clients.forEach((client) => { // Access each client on the server
+                client.send(JSON.stringify(payLoad)); // Broadcast client status payLoad to each client
+            });
 
         }
     })
