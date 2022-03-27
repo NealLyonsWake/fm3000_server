@@ -44,8 +44,8 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
             const payLoad = { // Create that a player has left payLoad broadcast announcement
                 'method': 'announce',
-                'nickname': clientMap[index].nickname,
-                'joined_or_left': 'left'
+                // 'nickname': clientMap[index].nickname,
+                'announcement': `${clientMap[index].nickname} has left`
             };
 
             wss.clients.forEach((client) => { // Access each client on the server
@@ -68,9 +68,9 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
                 if (client.clientID === request.clientID) {
                     return { // Store client nickname and health to clients array
                         ...client,
-                         nickname: request.nickname,
-                         health: request.health
-                        } 
+                        nickname: request.nickname,
+                        health: request.health
+                    }
                 }
                 else {
                     return { ...client } // Return the client if the client ID doesn't match the request
@@ -82,8 +82,8 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
             const payLoad = { // Create that a player has joined payLoad broadcast announcement
                 'method': 'announce',
-                'nickname': request.nickname,
-                'joined_or_left': 'joined'
+                // 'nickname': request.nickname,
+                'announcement': `${request.nickname} has joined`
             };
 
             wss.clients.forEach((client) => { // Access each client on the server
@@ -128,7 +128,24 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
                 return client.clientID === request.opponentID // Find the player who was shot
             })
 
-            clientMap[index].health-- // Subtract 1 from the health of that player who was shot
+            if (clientMap[index].health) {
+                clientMap[index].health-- // Subtract 1 from the health of that player who was shot
+                if (clientMap[index].health <= 0) {
+                    
+                    const winnerIndex = clientMap.findIndex((client) => {
+                        return client.clientID === request.clientID
+                    })
+                    
+                    const payLoad = {
+                        'method': 'announce',
+                        'announcement': `${clientMap[index].nickname} was killed by ${clientMap[winnerIndex].nickname}`
+                    }
+                   
+                    wss.clients.forEach((client) => { // Access each client on the server
+                        client.send(JSON.stringify(payLoad)); // Broadcast a kill announcement payLoad to each client
+                    });
+                }
+            }
 
             const payLoad = { // Create payload for broadcasting client status
                 'method': 'broadcastStatus',
@@ -138,6 +155,8 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
             wss.clients.forEach((client) => { // Access each client on the server
                 client.send(JSON.stringify(payLoad)); // Broadcast client status payLoad to each client
             });
+
+
 
         }
     })
