@@ -62,7 +62,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
 
         const request = JSON.parse(msg); // Store the request in JSON
 
-        if (request.method === 'nickname') {
+        if (request.method === 'nicknameAndHealth') {
 
             clientMap = clientMap.map((client) => {
                 if (client.clientID === request.clientID) {
@@ -124,7 +124,7 @@ wss.on('connection', (stream, req) => { // Handle all the request and response t
         }
 
         else if (request.method === 'opponentShot') { // Message update if a player is shot
-            const index = clientMap.findIndex(() => {
+            const index = clientMap.findIndex((client) => {
                 return client.clientID === request.opponentID // Find the player who was shot
             })
 
